@@ -27,21 +27,11 @@ class Clacker
       end
       private
       def parse_stint(string)
-        start, stop = string.split('-').map do |date|
+        start, stop = string.split(' - ').map do |date|
           DateTime.parse(date).to_time
         end
         start..stop
       end
-    end
-  end
-  class EntryCollection < Array
-    def initializer entries 
-      self << entries
-    end
-    def stories
-
-    end
-    def duration
     end
   end
 end

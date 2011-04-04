@@ -12,42 +12,45 @@ class Clacker < Thor
 
   desc "report [PROJECT_FILE]", "print a CSV report"
   def report(project_file)
-    grouped = ranges(project_file).group_by do |range|
+    Project.file = project_file
+    grouped = Project.entries.group_by do |range|
       range.date
     end
     report = CSV.generate do |csv|
       csv << %w[date hours notes commmits stories]
       for day, entries in grouped
-        commit_messages = Project.commits(
-            Range.new entries.map(&:start).min, entries.map(&:stop).max
-        ).map(&:message).join("\n")
-        notes = entries.map(&:notes).join("\n")
-        story_names = Note.new(commit_messages + notes)
-          .stories.map(&:name).join("\n")
+        row = Row.new(entries)
         csv << [
           day,
-          entries.sum(&:duration),
-          notes,
-          commit_messages,
-          story_names
+          sprintf('%0.2f', row.duration),
+          row.notes,
+          row.commit_messages,
+          row.story_names
         ]
       end
     end
     puts report
   end
-  private
-  def ranges(project_file) 
-    YAML.load(Pathname.new( project_file ).read).map do |entry_row|
-      Entry.parse entry_row 
-    end
-  end
 end
 class Clacker
-  class Note 
-    attr_accessor :text
-    def initialize text
-      @text = text
+  class Row < Struct.new :entries
+    def commit_messages
+      @commit_messages ||= Project.commits(
+        Range.new entries.map(&:start).min, entries.map(&:stop).max
+      ).map(&:message).join("\n")
     end
+    def notes
+      entries.map(&:notes).join("\n")
+    end
+    def duration 
+      entries.sum &:duration
+    end
+    def story_names
+      Note.new(commit_messages + notes)
+        .stories.map(&:name).join("\n")
+    end
+  end
+  class Note < Struct.new :text
     def stories
       story_ids.uniq.map do |id|
         self.class.project.stories.find(id)
@@ -64,7 +67,7 @@ class Clacker
     end
     class << self
       def project
-        @project ||= PivotalTracker::Project.find(Project.pivotal_project_id) 
+        @project ||= PivotalTracker::Project.find(Project.pivotal_id) 
       end
     end
   end
