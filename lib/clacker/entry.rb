@@ -1,6 +1,6 @@
 class Clacker
   class Entry
-    attr_accessor :notes
+    attr_accessor :notes, :stint
     def initialize(stint, notes='')
       @stint = stint 
       @notes = notes
@@ -25,8 +25,8 @@ class Clacker
           new parse_stint(opts)
         end
       end
-      private
       def parse_stint(string)
+        return false unless string =~ / - /
         start, stop = string.split(' - ').map do |date|
           DateTime.parse(date).to_time
         end
