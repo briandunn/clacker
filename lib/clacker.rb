@@ -1,41 +1,65 @@
 require 'thor'
-require 'git'
-require 'pivotal-tracker'
+require 'yaml'
 require 'date'
 require 'csv'
-require 'forwardable'
 require 'core_ext/array'
 
 class Clacker < Thor
-  autoload :Entry, 'clacker/entry'
-  autoload :Project, 'clacker/project'
 
-  desc "report [PROJECT_FILE]", "print a CSV report"
-  def report(project_file, start_date, end_date)
-    start_date, end_date = [start_date, end_date].map {|date| Date.parse(date) }
-    Project.file = project_file
-    grouped = (Project.entries.group_by do |range|
-      range.date
-    end).delete_if do |key, value|
-      not ( start_date..( end_date + 1 ) ).cover?(key)
+  desc "[PROJECT_FILE] [DATE]", 'report about entries on the date'
+  def day project_file, date
+    @stop = Date.parse(date) + 1
+    @entries = raw_entries(project_file).map do |time, note|
+      [ DateTime.parse(time).to_time, note ]
     end
-    report = CSV.generate do |csv|
+    CSV.generate do |csv|
       csv << column_names
-      for day, entries in grouped
-        row = Row.new(entries)
-        csv << row.to_column_values( *column_names )
+      @entries.each_with_index do |(time, note), i|
+        note = Note.new(note)
+        csv << [hours_between( time, next_time(i) ), note.project_name, note.other ]
       end
+    end.tap do |report|
+      puts report
     end
-    puts report
+  end
+
+  class Note < Struct.new :text
+    NAME_TAG = /(@[^\s]+)/
+    def project_name
+      text =~ NAME_TAG
+      $1
+    end
+    def other
+      text.gsub( NAME_TAG, '' ).strip
+    end
+  end
+
+  private
+  def hours_between start, stop
+    format '%0.2f', ( stop - start ) / 3600
+  end
+
+  def raw_file project_file
+    File.read project_file
+  end
+
+  def raw_entries project_file
+    YAML.load raw_file project_file
+  end
+
+  def next_time i
+    if entry = @entries[i + 1]
+      entry.first
+    else
+     @stop.to_time
+    end
   end
  
-  private
   def column_names
-    %w[date hours notes commits].tap do |cols| 
-      cols << 'stories' if Project.pivotal?
-    end
+    %w[hours project notes]
   end
 end
+=begin
 class Clacker
   class Row < Struct.new :entries
     def to_column_values *columns
@@ -89,3 +113,4 @@ class Clacker
     end
   end
 end
+=end
