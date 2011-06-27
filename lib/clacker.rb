@@ -9,17 +9,31 @@ class Clacker < Thor
   desc "[PROJECT_FILE] [DATE]", 'report about entries on the date'
   def day project_file, date
     @stop = Date.parse(date) + 1
-    @entries = raw_entries(project_file).map do |time, note|
+    @entries = []
+    raw_entries(project_file).map do |time, note|
       [ DateTime.parse(time).to_time, note ]
+    end.each_with_index do |(time, note), i|
+      @entries << Entry.new( hours_between( time, next_time(i) ), note )
     end
     CSV.generate do |csv|
       csv << column_names
-      @entries.each_with_index do |(time, note), i|
-        note = Note.new(note)
-        csv << [hours_between( time, next_time(i) ), note.project_name, note.other ]
+      @entries.group_by(&:project_name).map do |project, entries|
+        csv << [format( '%0.2f', entries.sum(&:duration) ), project, entries.map(&:other).join("\n")]
       end
     end.tap do |report|
       puts report
+    end
+  end
+
+  class Entry < Struct.new :duration, :text
+    def note
+      note = Note.new(text)
+    end
+    def project_name
+      note.project_name
+    end
+    def other
+      note.other
     end
   end
 
@@ -36,7 +50,7 @@ class Clacker < Thor
 
   private
   def hours_between start, stop
-    format '%0.2f', ( stop - start ) / 3600
+    ( stop - start ) / 3600
   end
 
   def raw_file project_file
@@ -59,58 +73,3 @@ class Clacker < Thor
     %w[hours project notes]
   end
 end
-=begin
-class Clacker
-  class Row < Struct.new :entries
-    def to_column_values *columns
-      columns.map do |col|
-        send col
-      end
-    end
-    def hours
-      sprintf '%0.2f', duration
-    end
-    def date
-      @day ||= entries.map( &:date ).sort.first
-    end
-    def commit_messages
-      @commit_messages ||= Project.commits(
-        Range.new entries.map(&:start).min, entries.map(&:stop).max
-      ).map(&:message).join("\n")
-    end
-    def commits; commit_messages; end
-    def notes
-      entries.map(&:notes).join("\n")
-    end
-    def duration 
-      entries.sum &:duration
-    end
-    def story_names
-      Note.new(commit_messages + notes)
-        .stories.map(&:name).join("\n")
-    end
-    def stories; story_names; end
-  end
-  class Note < Struct.new :text
-    def stories
-      story_ids.uniq.map do |id|
-        self.class.project.stories.find(id)
-      end
-    end
-    def story_ids
-      [].tap do |ids|
-        text.scan /\[([^\]]*)\]/ do
-          $1.scan /#(\d+)/ do
-            ids << $1.to_i
-          end
-        end
-      end
-    end
-    class << self
-      def project
-        @project ||= PivotalTracker::Project.find(Project.pivotal_id) 
-      end
-    end
-  end
-end
-=end
