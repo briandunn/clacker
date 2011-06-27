@@ -9,15 +9,12 @@ class Clacker < Thor
   desc "[PROJECT_FILE] [DATE]", 'report about entries on the date'
   def day project_file, date
     @stop = Date.parse(date) + 1
-    @entries = []
-    raw_entries(project_file).map do |time, note|
+    @open_entries = raw_entries(project_file).map do |time, note|
       [ DateTime.parse(time).to_time, note ]
-    end.each_with_index do |(time, note), i|
-      @entries << Entry.new( hours_between( time, next_time(i) ), note )
     end
     CSV.generate do |csv|
       csv << column_names
-      @entries.group_by(&:project_name).map do |project, entries|
+      entries.group_by(&:project_name).map do |project, entries|
         csv << [format( '%0.2f', entries.sum(&:duration) ), project, entries.map(&:other).join("\n")]
       end
     end.tap do |report|
@@ -49,6 +46,13 @@ class Clacker < Thor
   end
 
   private
+  def entries
+    [].tap do |entries|
+      @open_entries.each_with_index do |(time, note), i|
+         entries << Entry.new( hours_between( time, next_time(i) ), note )
+      end
+    end
+  end
   def hours_between start, stop
     ( stop - start ) / 3600
   end
@@ -62,7 +66,7 @@ class Clacker < Thor
   end
 
   def next_time i
-    if entry = @entries[i + 1]
+    if entry = @open_entries[i + 1]
       entry.first
     else
      @stop.to_time
