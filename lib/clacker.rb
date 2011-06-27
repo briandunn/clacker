@@ -8,9 +8,12 @@ class Clacker < Thor
 
   desc "[PROJECT_FILE] [DATE]", 'report about entries on the date'
   def day project_file, date
+    @start = Date.parse(date)
     @stop = Date.parse(date) + 1
     @open_entries = raw_entries(project_file).map do |time, note|
       [ DateTime.parse(time).to_time, note ]
+    end.select do |time, note|
+      @start.to_time <= time && @stop.to_time >= time
     end
     CSV.generate do |csv|
       csv << column_names
