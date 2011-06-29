@@ -65,7 +65,7 @@ class Clacker < Thor
   end
 
   def raw_entries project_file
-    YAML.load raw_file project_file
+    YAML.load( raw_file project_file ) || []
   end
 
   def next_time i

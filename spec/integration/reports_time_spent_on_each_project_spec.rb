@@ -6,7 +6,11 @@ shared_examples_for :a_report do
       time_file.close
     end
   end
-  let( :report ) { Clacker.new.day time_file.path, '2011-06-24' }
+  let( :report ) do
+    Clacker.new.tap do |clacker|
+      clacker.should_receive :puts
+    end.day time_file.path, '2011-06-24'
+  end
   subject { CSV.parse report }
   after do
     time_file.close!
@@ -46,11 +50,11 @@ describe 'Given a time file with multiple project tags', focus: true do
     end
     it do 
       should eq [
-        [ 'Hours', 'Project', 'Notes' ],
-        [ 0.08, '@internal', 'standup' ],
-        [ 2.33, '@mulu-demo', '' ],
-        [ 1.00, '@off', 'lunch' ],
-        [ 5.00, '@mulu', '' ]
+        [ 'hours', 'project'   , 'notes'   ],
+        [ '0.08' , '@internal' , 'standup' ],
+        [ '2.33' , '@mulu-demo', ''        ],
+        [ '7.58' , '@off'      , "lunch\noutie"   ],
+        [ '5.00' , '@mulu'     , ''        ]
       ]
     end
   end
