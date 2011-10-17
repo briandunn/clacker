@@ -15,14 +15,12 @@ class Clacker < Thor
     end.select do |time, note|
       @start.to_time <= time && @stop.to_time >= time
     end
-    CSV.generate do |csv|
-      csv << column_names
-      entries.group_by(&:project_name).map do |project, entries|
-        csv << [format( '%0.2f', entries.sum(&:duration) ), project, entries.map(&:other).join("\n")]
-      end
-    end.tap do |report|
-      puts report
-    end
+    print_report entries
+  end
+
+  desc "[PROJECT_FILE] [DATE]", 'report about entries on the date'
+  def week project_file, date
+    print_report entries
   end
 
   class Entry < Struct.new :duration, :text
@@ -49,6 +47,18 @@ class Clacker < Thor
   end
 
   private
+
+  def print_report entries
+    CSV.generate do |csv|
+      csv << column_names
+      entries.group_by(&:project_name).map do |project, entries|
+        csv << [format( '%0.2f', entries.sum(&:duration) ), project, entries.map(&:other).join("\n")]
+      end
+    end.tap do |report|
+      puts report
+    end
+  end
+
   def entries
     [].tap do |entries|
       @open_entries.each_with_index do |(time, note), i|
