@@ -5,5 +5,6 @@ gem 'pivotal-tracker'
 gem 'pry'
 
 group 'test' do
+  gem 'aruba'
   gem 'rspec'
 end
