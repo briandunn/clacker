@@ -2,4 +2,6 @@ require 'aruba/cucumber'
 require 'bundler'
 Bundler.require
 require 'csv'
-ENV['PATH'] = "#{File.expand_path(File.dirname(__FILE__) + '/../../bin')}#{File::PATH_SEPARATOR}#{ENV['PATH']}"
+root = Pathname.new File.expand_path '../../..', __FILE__
+$:.unshift root.join 'lib'
+ENV['PATH'] = "#{root.join 'bin'}#{File::PATH_SEPARATOR}#{ENV['PATH']}"

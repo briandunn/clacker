@@ -1,6 +1,6 @@
 source 'http://rubygems.org'
 gem 'thor'
-gem 'git'
+gem 'grit'
 gem 'pivotal-tracker'
 gem 'pry'
 

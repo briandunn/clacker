@@ -34,3 +34,37 @@ Feature: day summary
         | 2.33  | @mulu-demo |              |
         | 7.58  | @off       | lunch\noutie |
         | 5.00  | @mulu      |              |
+
+  Scenario: with commit messages
+    Given a git repo at ./hashboard
+    And that repo has the following commit:
+      | message | Made it awesome |
+    And this project file:
+    """
+    @hashboard:
+      path: hashboard
+    '07:45:00 UTC': @hashboard
+    '08:00:00 UTC': @off
+    """
+    When I run `day` with today's date
+    Then I see this CSV:
+        | hours | project    | notes           |
+        | 0.25  | @hashboard | Made it awesome |
+        | 21.00 | @off       |                 |
+
+  Scenario: posting to harvest
+    Given this project file:
+    """
+    @clacker:
+      harvest: { project_id: 259737, task_id: 232419 }
+    Tue Oct 11 07:45:00 CDT 2011: @clacker made it awesome
+    Tue Oct 11 08:00:00 CDT 2011: @off
+    """
+    When I clack with the arguments:
+      | day | 2011-06-24 | --harvest |
+    Then harvest has the following entry:
+      | spent at | 2011-06-24      |
+      | project  | Internal        |
+      | task     | Open Source     |
+      | hours    | 0.25            |
+      | notes    | made it awesome |

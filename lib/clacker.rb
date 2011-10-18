@@ -3,14 +3,16 @@ require 'yaml'
 require 'date'
 require 'csv'
 require 'core_ext/array'
+require 'grit'
 
 class Clacker < Thor
 
   desc "[PROJECT_FILE] [DATE]", 'report about entries on the date'
-  def day project_file, date
+  def day project_file_path, date
     @start = Date.parse(date)
     @stop = Date.parse(date) + 1
-    @open_entries = raw_entries(project_file).map do |time, note|
+    @@project = project_file = ProjectFile.new(project_file_path)
+    @open_entries = project_file.entries.map do |time, note|
       [ DateTime.parse(time).to_time, note ]
     end.select do |time, note|
       @start.to_time <= time && @stop.to_time >= time
@@ -18,31 +20,81 @@ class Clacker < Thor
     print_report entries
   end
 
-  desc "[PROJECT_FILE] [DATE]", 'report about entries on the date'
-  def week project_file, date
-    print_report entries
+  def self.project
+    @@project
   end
 
-  class Entry < Struct.new :duration, :text
+  class Entry < Struct.new :time, :duration, :text
     def note
-      note = Note.new(text)
+      note = Note.new(time, text)
     end
     def project_name
       note.project_name
     end
+    def harvest_project_id
+
+    end
+
+    def harvest_task_id
+
+    end
     def other
       note.other
     end
+    def push
+
+    end
   end
 
-  class Note < Struct.new :text
+  class Note < Struct.new :time, :text
     NAME_TAG = /(@[^\s]+)/
     def project_name
       text =~ NAME_TAG
       $1
     end
     def other
-      text.gsub( NAME_TAG, '' ).strip
+      text.gsub(NAME_TAG, '').strip + commit_messages
+    end
+    def date
+      time.to_date
+    end
+    def commit_messages
+      (commits if repo_path) || ''
+    end
+    def commits
+      `cd #{repo_path} && git log --pretty=%s --after #{date}T00:00 --before #{date}T23:59`.chomp
+    end
+    def repo_path
+      Clacker.project.repo_path(project_name)
+    end
+  end
+
+  class ProjectFile
+
+    attr_reader :path
+
+    def initialize path
+      @path = path
+    end
+
+    def repo_path(project)
+      if project = projects[project]
+        project['path']
+      end
+    end
+
+    def entries
+      @entries ||= data.reject { |key, value| key =~ /^@/ }
+    end
+
+    def projects
+      @projects ||= data.reject { |key,value| key !~ /^@/ }
+    end
+
+    private
+
+    def data
+      @data ||= (YAML.load(File.read(path)) || {})
     end
   end
 
@@ -62,20 +114,12 @@ class Clacker < Thor
   def entries
     [].tap do |entries|
       @open_entries.each_with_index do |(time, note), i|
-         entries << Entry.new( hours_between( time, next_time(i) ), note )
+         entries << Entry.new(time, hours_between(time, next_time(i)), note)
       end
     end
   end
   def hours_between start, stop
     ( stop - start ) / 3600
-  end
-
-  def raw_file project_file
-    File.read project_file
-  end
-
-  def raw_entries project_file
-    YAML.load( raw_file project_file ) || []
   end
 
   def next_time i
