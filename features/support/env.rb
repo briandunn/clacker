@@ -1,6 +1,6 @@
 require 'aruba/cucumber'
 require 'bundler'
-Bundler.require
+Bundler.require 'test'
 require 'csv'
 root = Pathname.new File.expand_path '../../..', __FILE__
 $:.unshift root.join 'lib'

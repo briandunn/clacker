@@ -63,6 +63,7 @@ PLATFORMS
 DEPENDENCIES
   aruba
   grit
+  nokogiri
   pivotal-tracker
   pry
   rspec
