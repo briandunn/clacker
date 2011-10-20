@@ -1,3 +1,4 @@
+require 'net/http'
 module Clacker
   class Harvest
     def initialize subdomain, email, password
