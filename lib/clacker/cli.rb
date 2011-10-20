@@ -1,13 +1,13 @@
 module Clacker
   class CLI < Thor
 
-    desc "[PROJECT_FILE] [DATE]", 'report about entries on the date'
+    desc "[LOG_FILE_PATH] [DATE]", 'report about entries on the date'
     method_options harvest: :boolean
-    def day project_file_path, date
+    def day log_file_path, date
       @start = Date.parse(date)
       @stop = Date.parse(date) + 1
-      Clacker.project = project_file = ProjectFile.new(project_file_path)
-      @open_entries = project_file.entries.map do |time, note|
+      Clacker.log = log = Log.new(log_file_path)
+      @open_entries = log.entries.map do |time, note|
         [ DateTime.parse(time).to_time, note ]
       end.select do |time, note|
         @start.to_time <= time && @stop.to_time >= time

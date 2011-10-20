@@ -7,14 +7,16 @@ require 'clacker/harvest'
 
 module Clacker
   autoload :CLI, 'clacker/cli'
+  autoload :Log, 'clacker/log'
 
-  def self.project= project
-    @@project = project
+  def self.log= log
+    @@log = log
   end
 
-  def self.project
-    @@project
+  def self.log
+    @@log
   end
+
   class Entry < Struct.new :time, :duration, :text
 
     def note
@@ -30,7 +32,7 @@ module Clacker
     end
 
     def project_settings
-      Clacker.project.projects[project_name]
+      Clacker.log.projects[project_name]
     end
   end
 
@@ -53,36 +55,7 @@ module Clacker
       `cd #{repo_path} && git log --pretty=%s --after #{date}T00:00 --before #{date}T23:59`.chomp
     end
     def repo_path
-      Clacker.project.repo_path(project_name)
-    end
-  end
-
-  class ProjectFile
-
-    attr_reader :path
-
-    def initialize path
-      @path = path
-    end
-
-    def repo_path(project)
-      if project = projects[project]
-        project['path']
-      end
-    end
-
-    def entries
-      @entries ||= data.reject { |key, value| key =~ /^@/ }
-    end
-
-    def projects
-      @projects ||= data.reject { |key,value| key !~ /^@/ }
-    end
-
-    private
-
-    def data
-      @data ||= (YAML.load(File.read(path)) || {})
+      Clacker.log.repo_path(project_name)
     end
   end
 
