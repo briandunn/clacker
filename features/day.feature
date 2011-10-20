@@ -61,9 +61,9 @@ Feature: day summary
     Tue Oct 11 08:00:00 CDT 2011: @off
     """
     When I clack with the arguments:
-      | day | 2011-06-24 | --harvest |
+      | day | 2011-10-11 | --harvest |
     Then harvest has the following entry:
-      | spent at | 2011-06-24      |
+      | spent at | 2011-10-11      |
       | project  | Internal        |
       | task     | Open Source     |
       | hours    | 0.25            |
