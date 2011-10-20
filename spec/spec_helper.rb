@@ -9,7 +9,7 @@ shared_examples_for :a_report do
     end
   end
   let( :report ) do
-    Clacker.new.tap do |clacker|
+    Clacker::CLI.new.tap do |clacker|
       clacker.should_receive :puts
     end.day time_file.path, '2011-06-24'
   end

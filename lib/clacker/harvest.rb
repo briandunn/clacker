@@ -1,4 +1,4 @@
-class Clacker
+module Clacker
   class Harvest
     def initialize subdomain, email, password
       @subdomain, @email, @password = subdomain, email, password
@@ -50,6 +50,10 @@ class Clacker
     def self.client
       args = YAML.load_file File.expand_path '~/.harvest.yaml'
       new *args
+    end
+
+    def self.push entries
+
     end
 
     class Entry
