@@ -1,3 +1,4 @@
+require 'net/http'
 require 'clacker/harvest'
 
 Given 'this project file:' do |project|
