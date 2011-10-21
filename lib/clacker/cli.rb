@@ -4,14 +4,8 @@ module Clacker
     desc "[LOG_FILE_PATH] [DATE]", 'report about entries on the date'
     method_options harvest: :boolean
     def day log_file_path, date
-      @start = Date.parse(date)
-      @stop = Date.parse(date) + 1
-      Clacker.log = log = Log.new(log_file_path)
-      @open_entries = log.entries.map do |time, note|
-        [ DateTime.parse(time).to_time, note ]
-      end.select do |time, note|
-        @start.to_time <= time && @stop.to_time >= time
-      end
+      Clacker.log_file_path = log_file_path
+      entries = entries_on Date.parse(date)
       Harvest.push entries if options['harvest']
       print_report entries
     end
@@ -29,22 +23,9 @@ module Clacker
       end
     end
 
-    def entries
-      [].tap do |entries|
-        @open_entries.each_with_index do |(time, note), i|
-        entries << Entry.new(time, hours_between(time, next_time(i)), note)
-        end
-      end
-    end
-    def hours_between start, stop
-      ( stop - start ) / 3600
-    end
-
-    def next_time i
-      if entry = @open_entries[i + 1]
-        entry.first
-      else
-        @stop.to_time
+    def entries_on date
+      Clacker.log.entries.select do |entry|
+        entry.time.to_date == date.to_date
       end
     end
 

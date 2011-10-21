@@ -9,8 +9,8 @@ module Clacker
   autoload :CLI, 'clacker/cli'
   autoload :Log, 'clacker/log'
 
-  def self.log= log
-    @@log = log
+  def self.log_file_path= log_file_path
+    @@log = Log.from_file log_file_path
   end
 
   def self.log
