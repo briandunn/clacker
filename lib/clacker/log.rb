@@ -25,10 +25,6 @@ module Clacker
       end
     end
 
-    def projects
-      @projects ||= data.reject { |key,value| key !~ /^@/ }
-    end
-
     private
 
     def hours_between start, stop

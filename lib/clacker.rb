@@ -32,7 +32,7 @@ module Clacker
     end
 
     def project_settings
-      Clacker.log.projects[project_name]
+      Clacker.log.projects[project_name] || {}
     end
   end
 

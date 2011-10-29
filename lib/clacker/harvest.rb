@@ -54,7 +54,20 @@ module Clacker
     end
 
     def self.push entries
-
+      harvest_entries = entries.map do |clack|
+        if harvest_settings = clack.project_settings['harvest']
+          Entry.new.tap do |harvest|
+            harvest.notes      = clack.other
+            harvest.hours      = clack.duration
+            harvest.project_id = harvest_settings['project_id']
+            harvest.task_id    = harvest_settings['task_id']
+            harvest.spent_at   = clack.time.to_date
+          end
+        end
+      end.compact
+      harvest_entries.map do |entry|
+        client.add_entry entry
+      end
     end
 
     class Entry

@@ -63,8 +63,8 @@ Feature: day summary
     When I clack with the arguments:
       | day | 2011-10-11 | --harvest |
     Then harvest has the following entry:
-      | spent at | 2011-10-11      |
-      | project  | Internal        |
-      | task     | Open Source     |
-      | hours    | 0.25            |
-      | notes    | made it awesome |
+      | spent at | 2011-10-11       |
+      | project  | Internal         |
+      | task     | Open Source Work |
+      | hours    | 0.25             |
+      | notes    | made it awesome  |
