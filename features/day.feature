@@ -29,11 +29,26 @@ Feature: day summary
     When I clack with the arguments:
       | day | 2011-06-24 |
     Then I see this CSV:
-        | hours | project    | notes        |
-        | 0.08  | @internal  | standup      |
-        | 2.33  | @mulu-demo |              |
-        | 7.58  | @off       | lunch\noutie |
-        | 5.00  | @mulu      |              |
+      | hours | project    | notes        |
+      | 0.08  | @internal  | standup      |
+      | 2.33  | @mulu-demo |              |
+      | 7.58  | @off       | lunch\noutie |
+      | 5.00  | @mulu      |              |
+
+  Scenario: group by project
+    Given this project file:
+    """
+    Fri Jun 24 09:00:00 CDT 2011: @clacker
+    Fri Jun 24 09:15:00 CDT 2011: @off
+    Fri Jun 24 11:00:00 CDT 2011: @clacker
+    Fri Jun 24 12:00:00 CDT 2011: @off
+    """
+    When I clack with the arguments:
+      | day | 2011-06-24 |
+    Then I see this CSV:
+      | hours | project  | notes |
+      | 1.25  | @clacker |       |
+      | 13.75 | @off     |       |
 
   Scenario: with commit messages
     Given a git repo at ./hashboard
