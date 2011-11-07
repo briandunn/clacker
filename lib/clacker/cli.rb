@@ -1,7 +1,9 @@
+require 'nokogiri'
+require 'pry'
 module Clacker
   class CLI < Thor
 
-    desc "[LOG_FILE_PATH] [DATE]", 'report about entries on the date'
+    desc "day [LOG_FILE_PATH] [DATE]", 'report about entries on the date'
     method_options harvest: :boolean
     def day log_file_path, date
       Clacker.log_file_path = log_file_path
