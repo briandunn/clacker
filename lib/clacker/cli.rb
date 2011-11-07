@@ -12,6 +12,11 @@ module Clacker
       print_report entries
     end
 
+    desc 'tasks', 'list harvest tasks'
+    def tasks
+      puts Harvest.client.tasks.to_yaml
+    end
+
     private
 
     def print_report entries

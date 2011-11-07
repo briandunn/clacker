@@ -13,6 +13,19 @@ module Clacker
       post "/daily/add", entry.to_xml
     end
 
+    def tasks
+      doc = Nokogiri daily(Date.today).body
+      doc.xpath('//task').map do |task|
+        {
+          "#{task.xpath '../../name/text()'} - #{task.xpath './name/text()'}" =>
+          {
+            project_id: task.xpath('../../id/text()').to_s.to_i,
+            task_id: task.xpath('./id/text()').to_s.to_i
+          }
+        }
+      end
+    end
+
     def who_am_i
       get '/account/who_am_i'
     end
