@@ -74,7 +74,7 @@ module Clacker
             harvest.hours      = clack.duration
             harvest.project_id = harvest_settings['project_id']
             harvest.task_id    = harvest_settings['task_id']
-            harvest.spent_at   = clack.time.to_date
+            harvest.spent_at   = clack.date
           end
         end
       end.compact

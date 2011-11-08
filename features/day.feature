@@ -29,11 +29,11 @@ Feature: day summary
     When I clack with the arguments:
       | day | 2011-06-24 |
     Then I see this CSV:
-      | hours | project    | notes        |
-      | 0.08  | @internal  | standup      |
-      | 2.33  | @mulu-demo |              |
-      | 7.58  | @off       | lunch\noutie |
-      | 5.00  | @mulu      |              |
+      | hours | project    | notes         |
+      | 0.08  | @internal  | standup       |
+      | 2.33  | @mulu-demo |               |
+      | 7.58  | @off       | lunch\n outie |
+      | 5.00  | @mulu      |               |
 
   Scenario: group by project
     Given this project file:
@@ -65,7 +65,6 @@ Feature: day summary
     Then I see this CSV:
         | hours | project    | notes           |
         | 0.25  | @hashboard | Made it awesome |
-        | 21.00 | @off       |                 |
 
   Scenario: posting to harvest
     Given this project file:

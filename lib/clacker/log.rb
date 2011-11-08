@@ -16,13 +16,43 @@ module Clacker
     end
 
     def entries
-      [].tap do |entries|
+      EntryCollection.new.tap do |entries|
         data.each_with_index do |raw_entry, i|
           time, note = raw_entry.time, raw_entry.note
           duration = hours_between(time, next_time(i))
           entries << Entry.new(time, duration, note)
         end
       end
+    end
+
+    class EntryCollection
+
+      extend Forwardable
+
+      def_delegators :entries, :first, :last, :<<, :map, :group_by
+
+      attr_reader :entries
+      def initialize entries=nil
+        @entries ||= []
+      end
+
+      def << entry
+        entries << entry
+      end
+
+      def on date
+        entries.select! do |entry|
+          entry.time.to_date == date.to_date
+        end
+        self
+      end
+
+      def by_project
+        entries.group_by(&:project_name).map do |project, entries|
+          entries.sum
+        end
+      end
+
     end
 
     private

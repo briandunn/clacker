@@ -34,6 +34,14 @@ module Clacker
     def project_settings
       Clacker.log.projects[project_name] || {}
     end
+
+    def + entry
+      self.class.new time, duration + entry.duration, "#{text}\n#{entry.text}"
+    end
+
+    def date
+      time.to_date
+    end
   end
 
   class Note < Struct.new :time, :text

@@ -17,7 +17,7 @@ When /^I run `day` with today's date$/ do
 end
 
 Then /^I see this CSV:$/ do |table|
-  table.diff! CSV.parse(all_stdout)
+  table.diff! CSV.parse(all_stdout), surplus_row: false
 end
 
 

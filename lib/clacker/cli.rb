@@ -1,5 +1,4 @@
 require 'nokogiri'
-require 'pry'
 module Clacker
   class CLI < Thor
 
@@ -22,8 +21,8 @@ module Clacker
     def print_report entries
       CSV.generate do |csv|
         csv << column_names
-        entries.group_by(&:project_name).map do |project, entries|
-          csv << [format( '%0.2f', entries.sum(&:duration) ), project, entries.map(&:other).uniq.join("\n")]
+        entries.each do |entry|
+          csv << [format('%0.2f', entry.duration), entry.project_name, entry.other]
         end
       end.tap do |report|
         puts report
@@ -31,9 +30,7 @@ module Clacker
     end
 
     def entries_on date
-      Clacker.log.entries.select do |entry|
-        entry.time.to_date == date.to_date
-      end
+      Clacker.log.entries.on(date).by_project
     end
 
     def column_names
